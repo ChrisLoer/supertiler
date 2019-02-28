@@ -7,8 +7,10 @@
   "author": "Chris Loer <chris.loer@gmail.com>",
   "license": "BSD",
   "dependencies": {
+    "node-gzip": "^1.1.2",
     "sqlite": "^3.0.2",
     "supercluster": "^6.0.1",
+    "vt-pbf": "^3.1.1",
     "yargs": "^13.2.1"
   }
 }

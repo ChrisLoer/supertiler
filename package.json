@@ -1,0 +1,14 @@
+{
+  "name": "supertiler",
+  "version": "0.0.1",
+  "description": "GeoJSON -> MBTiles with Supercluster",
+  "main": "supertiler.js",
+  "repository": "https://github.com/ChrisLoer/supertiler",
+  "author": "Chris Loer <chris.loer@gmail.com>",
+  "license": "BSD",
+  "dependencies": {
+    "sqlite": "^3.0.2",
+    "supercluster": "^6.0.1",
+    "yargs": "^13.2.1"
+  }
+}

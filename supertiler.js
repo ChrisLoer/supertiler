@@ -2,13 +2,14 @@
 const Supercluster = require('supercluster');
 const Sqlite = require('sqlite');
 const Yargs = require('yargs');
+const fs = require('fs')
 
 const argv = Yargs.usage('Usage: $0 [options]')
     .example('$0 -i in.geojson -o out.mbtiles --minZoom 0 --maxZoom 5 --map "(props) => ({sum: props.myValue})" --reduce "(accumulated, props) => { accumulated.sum += props.sum; }"',
              'Cluster from zoom 0 to 5 while aggregating "myValue" into "sum" property. Outputs tileset with zoom from 0 to 6.')
     .alias('i', 'input')
     .nargs('i', 1)
-    .describe('i', 'Input in GeoJSON format')
+    .describe('i', 'Input in GeoJSON format. Each feature\'s geometry must be a GeoJSON Point.')
     .alias('o', 'output')
     .nargs('o', 1)
     .describe('o', 'Path of output MBTiles database')
@@ -31,3 +32,15 @@ const argv = Yargs.usage('Usage: $0 [options]')
     .string('reduce').nargs('reduce', 1)
     .epilogue('Generation will fail if any tile goes over maximum size of 500KB. In this case, try increasing cluster radius, increasing max zoom, or generating fewer aggregated properties.')
     .argv;
+
+const clustered = new Supercluster({
+    minZoom: argv.minZoom,
+    maxZoom: argv.maxZoom,
+    radius: argv.radius,
+    extent: argv.extent,
+    nodeSize: argv.nodeSize,
+    map: argv.map ? eval(argv.map) : null,
+    reduce: argv.reduce ? eval(argv.reduce) : null
+}).load(JSON.parse(fs.readFileSync(argv.i)).features);
+
+console.log(clustered.getTile(0,0,0));

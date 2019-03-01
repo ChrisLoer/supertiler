@@ -5,6 +5,7 @@ const Yargs = require('yargs');
 const fs = require('fs')
 const VTpbf = require('vt-pbf');
 const {gzip} = require('node-gzip');
+const {performance} = require('perf_hooks');
 
 const argv = Yargs.usage('Usage: $0 [options]')
     .example('$0 -i in.geojson -o out.mbtiles --minZoom 0 --maxZoom 5 --map "(props) => ({sum: props.myValue})" --reduce "(accumulated, props) => { accumulated.sum += props.sum; }"',
@@ -57,6 +58,7 @@ const clustered = new Supercluster({
     reduce: argv.reduce ? eval(argv.reduce) : null
 }).load(JSON.parse(fs.readFileSync(argv.i)).features);
 
+console.log(`Finished clustering at ${performance.now()}`);
 fs.unlinkSync(argv.o); // Clear previous MBTiles, if it exists
 Sqlite.open(argv.o, { Promise }).then((db) => {
     Promise.all([
@@ -130,7 +132,7 @@ Sqlite.open(argv.o, { Promise }).then((db) => {
 
         Promise.all(statements).then(() => {
             // TODO include stats?
-            console.log("Finished generating MBTiles.");
+            console.log(`Finished generating MBTiles at ${performance.now()}.`);
         });
     });
 });

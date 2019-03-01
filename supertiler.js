@@ -43,8 +43,8 @@ const argv = Yargs.usage('Usage: $0 [options]')
     .default('center', "0,0,0", "(null island)")
     .describe('description', 'A description of the tileset\'s content.')
     .string('description').nargs('description', 1)
-    .describe('tilesetVersion', 'The version of the tileset. See MBTiles spec.')
-    .number('tilesetVersion').nargs('tilesetVersion', 1)
+    .describe('tileSpecVersion', 'The version of the Mapbox Vector Tile Specification to use. See MBTiles spec.')
+    .number('tileSpecVersion').nargs('tileSpecVersion', 1).default('tileSpecVersion', 2)
     .epilogue('Generation will fail if any tile goes over maximum size of 500KB. In this case, try increasing cluster radius, increasing max zoom, or generating fewer aggregated properties.')
     .argv;
 
@@ -59,7 +59,10 @@ const clustered = new Supercluster({
 }).load(JSON.parse(fs.readFileSync(argv.i)).features);
 
 console.log(`Finished clustering at ${performance.now()}`);
-fs.unlinkSync(argv.o); // Clear previous MBTiles, if it exists
+if (fs.existsSync(argv.o)) {
+    // Clear previous MBTiles, if it exists
+    fs.unlinkSync(argv.o);
+}
 Sqlite.open(argv.o, { Promise }).then((db) => {
     Promise.all([
         db.run('PRAGMA application_id = 0x4d504258'), // See https://www.sqlite.org/src/artifact?ci=trunk&filename=magic.txt
@@ -74,14 +77,12 @@ Sqlite.open(argv.o, { Promise }).then((db) => {
         db.run('INSERT INTO metadata (name, value) VALUES ("bounds", ?)', argv.bounds);
         db.run('INSERT INTO metadata (name, value) VALUES ("center", ?)', argv.center);
         db.run('INSERT INTO metadata (name, value) VALUES ("type", "overlay")'); // See MBTiles spec: I think "overlay" is most appropriate here
+        db.run('INSERT INTO metadata (name, value) VALUES ("version", ?)', argv.tileSpecVersion);
         if (argv.attribution) {
             db.run('INSERT INTO metadata (name, value) VALUES ("attribution", ?)', argv.attribution);
         }
         if (argv.description) {
             db.run('INSERT INTO metadata (name, value) VALUES ("description", ?)', argv.description);
-        }
-        if (argv.tilesetVersion) {
-            db.run('INSERT INTO metadata (name, value) VALUES ("version", ?)', argv.tilesetVersion);
         }
 
         const fields = {};
@@ -105,14 +106,14 @@ Sqlite.open(argv.o, { Promise }).then((db) => {
                     }
 
                     // Convert to PBF and compress before insertion
-                    gzip(VTpbf.fromGeojsonVt({ 'geojsonLayer': tile })).then((compressed) => {
+                    gzip(VTpbf.fromGeojsonVt({ 'geojsonLayer': tile }, { version: argv.tileSpecVersion, extent: argv.extent })).then((compressed) => {
                         if (compressed.length > 500000) {
-                            throw new Error(`Tile {z}, {x}, {y} greater than 500KB`);
+                            throw new Error(`Tile ${z}, ${x}, ${y} greater than 500KB`);
                         }
                         statements.push(
                             db.run(
                                 'INSERT INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES(?, ?, ?, ?)',
-                                z, x, y, compressed));
+                                z, x, zoomDimension - 1 - y, compressed));
                     });
                 }
             }

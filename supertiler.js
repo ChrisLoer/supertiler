@@ -19,9 +19,11 @@ const argv = Yargs.usage('Usage: $0 [options]')
     .demandOption(['i', 'o'])
     .help('h')
     .alias('h', 'help')
+    .describe('includeUnclustered', 'Include one zoom level above the max clustering zoom.')
+    .default('includeUnclustered', true).boolean('includeUnclustered').nargs('includeUnclustered', 1)
     .describe('minZoom', 'Minimum zoom level at which clusters are generated.')
     .default('minZoom', 0).nargs('minZoom', 1).number('minZoom')
-    .describe('maxZoom', 'Maximum zoom level at which clusters are generated. Output tileset will include one zoom level higher (unclustered).')
+    .describe('maxZoom', 'Maximum zoom level at which clusters are generated..')
     .default('maxZoom', 16).nargs('maxZoom', 1).number('maxZoom')
     .describe('radius', 'Cluster radius, in pixels.')
     .default('radius', 40).nargs('radius', 1).number('radius')
@@ -33,6 +35,8 @@ const argv = Yargs.usage('Usage: $0 [options]')
     .string('map').nargs('map', 1)
     .describe('reduce', 'A javscript reduce function that merges properties of two clusters into one. See supercluster documentation.')
     .string('reduce').nargs('reduce', 1)
+    .describe('filter', 'A javscript function that filters features from the resulting tiles based on their properties.')
+    .string('filter').nargs('filter', 1)
     .describe('attribution', '(HTML): An attribution string, which explains the sources of data and/or style for the map.')
     .string('attribution').nargs('attribution', 1)
     .describe('bounds', '(string of comma-separated numbers): The maximum extent of the rendered map area. See MBTiles spec.')
@@ -63,6 +67,7 @@ if (fs.existsSync(argv.o)) {
     // Clear previous MBTiles, if it exists
     fs.unlinkSync(argv.o);
 }
+const filter = argv.filter ? eval(argv.filter) : undefined;
 Sqlite.open(argv.o, { Promise }).then((db) => {
     Promise.all([
         db.run('PRAGMA application_id = 0x4d504258'), // See https://www.sqlite.org/src/artifact?ci=trunk&filename=magic.txt
@@ -73,7 +78,7 @@ Sqlite.open(argv.o, { Promise }).then((db) => {
         db.run('INSERT INTO metadata (name, value) VALUES ("name", ?)', argv.o);
         db.run('INSERT INTO metadata (name, value) VALUES ("format", "pbf")');
         db.run('INSERT INTO metadata (name, value) VALUES ("minZoom", ?)', argv.minZoom);
-        db.run('INSERT INTO metadata (name, value) VALUES ("maxZoom", ?)', argv.maxZoom + 1);
+        db.run('INSERT INTO metadata (name, value) VALUES ("maxZoom", ?)', argv.maxZoom + (argv.includeUnclustered ? 1 : 0));
         db.run('INSERT INTO metadata (name, value) VALUES ("bounds", ?)', argv.bounds);
         db.run('INSERT INTO metadata (name, value) VALUES ("center", ?)', argv.center);
         db.run('INSERT INTO metadata (name, value) VALUES ("type", "overlay")'); // See MBTiles spec: I think "overlay" is most appropriate here
@@ -88,16 +93,26 @@ Sqlite.open(argv.o, { Promise }).then((db) => {
         const fields = {};
         const statements = [];
         // Insert tiles
-        for (let z = argv.minZoom; z <= argv.maxZoom + 1; z++) {
+        for (let z = argv.minZoom; z <= argv.maxZoom + (argv.includeUnclustered ? 1 : 0); z++) {
             const zoomDimension = Math.pow(2, z);
             // TODO: No need to process tiles outside of bounds
             for (let x = 0; x < zoomDimension; x++) {
                 for (let y = 0; y < zoomDimension; y++) {
                     const tile = clustered.getTile(z, x, y);
-                    if (!tile || tile.features.length === 0) {
+                    if (!tile || !tile.features) {
                         // Don't serialize empty tiles
                         continue;
                     }
+                    // Apply feature filter
+                    if (filter) {
+                        tile.features = tile.features.filter((feature) => filter(feature.tags));
+                    }
+
+                    if (tile.features.length === 0) {
+                        // Don't serialize empty tiles (after our custom feature filter)
+                        continue;
+                    }
+
                     // Collect field information for metadata
                     for (const feature of tile.features) {
                         for (const property in feature.tags) {

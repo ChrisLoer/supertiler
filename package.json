@@ -25,12 +25,12 @@
         "sqlite": "^3.0.2",
         "supercluster": "^6.0.1",
         "vt-pbf": "^3.1.1",
-        "yargs": "^13.2.1"
+        "yargs": "^13.2.1",
+        "esm": "^3.1.0"
     },
     "devDependencies": {
         "eslint": "^5.12.0",
         "eslint-config-mourner": "^3.0.0",
-        "esm": "^3.1.0",
         "tap": "^12.1.1"
     },
     "eslintConfig": {

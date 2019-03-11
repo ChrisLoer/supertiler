@@ -1,4 +1,4 @@
-# supertiler [![Build Status](https://travis-ci.org/chrisloer/supertiler.svg?branch=master)](https://travis-ci.org/chrisloer/supertiler)
+# supertiler [![Build Status](https://travis-ci.org/ChrisLoer/supertiler.svg?branch=master)](https://travis-ci.org/ChrisLoer/supertiler)
 [GeoJSON](https://tools.ietf.org/html/rfc7946) -> [MBTiles](https://github.com/mapbox/mbtiles-spec/blob/master/1.3/spec.md) using [Supercluster](https://github.com/mapbox/supercluster).
 
 Use Supertiler when you want to make a tiled dataset out of a large set of GeoJSON point features. Supertiler uses Supercluster to cluster points, in order to improve performance and keep low-zoom tiles from violating the 500KB size limit for tilesets hosted by Mapbox. For a more general purpose tileset generating tool, see [Tippecanoe](https://github.com/mapbox/tippecanoe). Among its many features, Tippecanoe also supports point clustering, but using Supercluster has a few advantages:

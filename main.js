@@ -102,7 +102,7 @@ export default function (options) {
 
                     // Convert to PBF and compress before insertion
                     compressedTiles.push(
-                        gzip(VTpbf.fromGeojsonVt({'geojsonLayer': tile}, {version: options.tileSpecVersion, extent: options.extent})).then(compressed => {
+                        gzip(VTpbf.fromGeojsonVt({'geojsonLayer': tile}, {version: options.tileSpecVersion, extent: options.extent})).then((compressed) => {
                             if (compressed.length > 500000) {
                                 return Promise.reject(new Error(`Tile z:${z}, x:${x}, y:${y} greater than 500KB compressed. Try increasing radius or max zoom, or try including fewer cluster properties.`));
                             }
@@ -110,6 +110,7 @@ export default function (options) {
                                 db.run(
                                     'INSERT INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES(?, ?, ?, ?)',
                                     z, x, zoomDimension - 1 - y, compressed));
+                            return Promise.resolve();
                         })
                     );
                 }

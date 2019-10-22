@@ -17,6 +17,7 @@ const defaultOptions = {
     reduce: null, // (accumulated, props) => { accumulated.sum += props.sum; }
     // properties to use for individual points when running the reducer
     map: props => props, // props => ({sum: props.my_value})
+    storeClusterExpansionZoom: false,
 
     // For mbtiles
     bounds: '-180.0,-85,180,85',
@@ -76,6 +77,7 @@ export default function (options) {
         for (let z = options.minZoom; z <= options.maxZoom + (options.includeUnclustered ? 1 : 0); z++) {
             const zoomDimension = Math.pow(2, z);
             // TODO: No need to process tiles outside of bounds
+            // TODO: Stop zoom descent for tiles that don't have any clusters
             for (let x = 0; x < zoomDimension; x++) {
                 for (let y = 0; y < zoomDimension; y++) {
                     const tile = clustered.getTile(z, x, y);
@@ -97,6 +99,13 @@ export default function (options) {
                     for (const feature of tile.features) {
                         for (const property in feature.tags) {
                             fields[property] = typeof feature.tags[property];
+                        }
+                    }
+                    if (options.storeClusterExpansionZoom) {
+                        for (const feature of tile.features) {
+                            if (feature.tags.cluster_id) {
+                                feature.tags['clusterExpansionZoom'] = clustered.getClusterExpansionZoom(feature.tags.cluster_id);
+                            }
                         }
                     }
 

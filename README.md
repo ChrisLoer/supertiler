@@ -28,52 +28,59 @@ supertiler -i input.geojson -o output.mbtiles
 ```
 
 ```
-Usage: supertiler [options]
+Usage: supertiler.js [options]
 
 Options:
-  --version             Show version number                            [boolean]
-  --input, -i           Input in GeoJSON format. Each feature's geometry must be
-                        a GeoJSON Point.                              [required]
-  --output, -o          Path of output MBTiles database               [required]
-  -h, --help            Show help                                      [boolean]
-  --includeUnclustered  Include one zoom level above the max clustering zoom.
-                                                       [boolean] [default: true]
-  --minZoom             Minimum zoom level at which clusters are generated.
-                                                           [number] [default: 0]
-  --maxZoom             Maximum zoom level at which clusters are generated..
-                                                           [number] [default: 8]
-  --radius              Cluster radius, in pixels.        [number] [default: 40]
-  --extent              (Tiles) Tile extent. Radius is calculated relative to
-                        this value.                      [number] [default: 512]
-  --nodeSize            Size of the KD-tree leaf node. Affects performance.
-                                                          [number] [default: 64]
-  --map                 A javscript function that returns cluster properties
-                        corresponding to a single point. See supercluster
-                        documentation.                                  [string]
-  --reduce              A javscript reduce function that merges properties of
-                        two clusters into one. See supercluster documentation.
+  --version                    Show version number                     [boolean]
+  --input, -i                  Input in GeoJSON format. Each feature's geometry
+                               must be a GeoJSON Point.               [required]
+  --output, -o                 Path of output MBTiles database        [required]
+  -h, --help                   Show help                               [boolean]
+  --includeUnclustered         Include one zoom level above the max clustering
+                               zoom.                   [boolean] [default: true]
+  --minZoom                    Minimum zoom level at which clusters are
+                               generated.                  [number] [default: 0]
+  --maxZoom                    Maximum zoom level at which clusters are
+                               generated.                  [number] [default: 8]
+  --radius                     Cluster radius, in pixels. [number] [default: 40]
+  --extent                     (Tiles) Tile extent. Radius is calculated
+                               relative to this value.   [number] [default: 512]
+  --nodeSize                   Size of the KD-tree leaf node. Affects
+                               performance.               [number] [default: 64]
+  --map                        A javscript function that returns cluster
+                               properties corresponding to a single point. See
+                               supercluster documentation.              [string]
+  --reduce                     A javscript reduce function that merges
+                               properties of two clusters into one. See
+                               supercluster documentation.              [string]
+  --filter                     A javscript function that filters features from
+                               the resulting tiles based on their properties.
                                                                         [string]
-  --filter              A javscript function that filters features from the
-                        resulting tiles based on their properties.      [string]
-  --attribution         (HTML): An attribution string, which explains the
-                        sources of data and/or style for the map.       [string]
-  --bounds              (string of comma-separated numbers): The maximum extent
-                        of the rendered map area. See MBTiles spec.
-                                              [string] [default: (entire world)]
-  --center              (comma-separated numbers): The longitude, latitude, and
-                        zoom level of the default view of the map. See MBTiles
-                        spec.                  [string] [default: (null island)]
-  --description         A description of the tileset's content.         [string]
-  --tileSpecVersion     The version of the Mapbox Vector Tile Specification to
-                        use. See MBTiles spec.             [number] [default: 2]
-  --logPerformance      Output performance timing logs to console.     [boolean]
+  --storeClusterExpansionZoom  Store the "cluster expansion zoom" as a property
+                               for each cluster.      [boolean] [default: false]
+  --attribution                (HTML): An attribution string, which explains the
+                               sources of data and/or style for the map.[string]
+  --bounds                     (string of comma-separated numbers): The maximum
+                               extent of the rendered map area. See MBTiles
+                               spec.          [string] [default: (entire world)]
+  --center                     (comma-separated numbers): The longitude,
+                               latitude, and zoom level of the default view of
+                               the map. See MBTiles spec.
+                                               [string] [default: (null island)]
+  --description                A description of the tileset's content.  [string]
+  --tileSpecVersion            The version of the Mapbox Vector Tile
+                               Specification to use. See MBTiles spec.
+                                                           [number] [default: 2]
+  --logPerformance             Output performance timing logs to console.
+                                                                       [boolean]
 
 Examples:
-  supertiler -i in.geojson -o out.mbtiles   Cluster from zoom 0 to 5 while
-  --minZoom 0 --maxZoom 5 --map "(props)    aggregating "myValue" into "sum"
-  => ({sum: props.myValue})" --reduce       property. Outputs tileset with zoom
-  "(accumulated, props) => {                from 0 to 6.
-  accumulated.sum += props.sum; }"
+  supertiler.js -i in.geojson -o            Cluster from zoom 0 to 5 while
+  out.mbtiles --minZoom 0 --maxZoom 5       aggregating "myValue" into "sum"
+  --map "(props) => ({sum:                  property. Outputs tileset with zoom
+  props.myValue})" --reduce "(accumulated,  from 0 to 6.
+  props) => { accumulated.sum +=
+  props.sum; }"
 
 Generation will fail if any tile goes over maximum size of 500KB. In this case,
 try increasing cluster radius, increasing max zoom, or generating fewer

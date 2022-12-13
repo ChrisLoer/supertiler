@@ -8,7 +8,7 @@ Use Supertiler when you want to make a tiled dataset out of a large set of GeoJS
 - Supercluster supports custom property aggregation functions, while Tippecanoe provides a set of pre-defined aggregators.
 - [Mapbox GL JS](https://github.com/mapbox/mapbox-gl-js) uses Supercluster for clustering, so if you've made a map with client-side clustering and want to switch to server-hosted (and tiled) data, Supertiler allows for a direct translation.
 
-Many thanks to @mourner and @ericfischer, from whom I have copied liberally!
+Many thanks to @mourner and @e-n-f, from whom I have copied liberally!
 
 ## Usage
 ### Node

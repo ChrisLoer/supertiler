@@ -4,6 +4,7 @@
     "description": "GeoJSON -> MBTiles with Supercluster",
     "module": "main.js",
     "type": "module",
+    "types": "supertiler.d.ts",
     "scripts": {
         "pretest": "eslint main.js supertiler.js test/test.js",
         "test": "tap test",
@@ -37,6 +38,12 @@
         "extends": "mourner",
         "rules": {
             "camelcase": 0
+        }
+    },
+    "exports": {
+        ".": {
+            "import": "./main.js",
+            "require": "./main.cjs"
         }
     }
 }

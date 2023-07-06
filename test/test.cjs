@@ -1,7 +1,10 @@
-import tap from 'tap';
-import supertiler from '../main.js';
-import {open} from 'sqlite';
-import sqlite3 from 'sqlite3';
+// import tap from 'tap';
+const tap = require('tap');
+const supertiler = require('../main.cjs');
+const {open} = require('sqlite');
+const sqlite3 = require('sqlite3');
+// import {open} from 'sqlite';
+// import sqlite3 from 'sqlite3';
 
 const test = tap.test;
 

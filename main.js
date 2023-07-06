@@ -1,9 +1,10 @@
 import Supercluster from 'supercluster';
-import Sqlite from 'sqlite';
+import {open} from 'sqlite';
 import VTpbf from 'vt-pbf';
 import {gzip} from 'node-gzip';
 import {performance} from 'perf_hooks';
 import fs from 'fs';
+import sqlite3 from 'sqlite3';
 
 const defaultOptions = {
     // For Supercluster
@@ -50,7 +51,7 @@ export default function (options) {
         fs.unlinkSync(options.output);
     }
     const filter = options.filter;
-    return Sqlite.open(options.output, {Promise}).then(db => Promise.all([
+    return open({filename: options.output, driver: sqlite3.Database}, {Promise}).then(db => Promise.all([
         db.run('CREATE TABLE metadata (name text, value text)'),
         db.run('CREATE TABLE tiles (zoom_level integer, tile_column integer, tile_row integer, tile_data blob)')
     ]).then(() => {

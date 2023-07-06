@@ -1,6 +1,7 @@
 import tap from 'tap';
-import supertiler from '../index.js';
-import Sqlite from 'sqlite';
+import supertiler from '../main.js';
+import {open} from 'sqlite';
+import sqlite3 from 'sqlite3';
 
 const test = tap.test;
 
@@ -10,7 +11,7 @@ test('mbtiles sanity test', (t) => {
         output: './test/basic.mbtiles',
         maxZoom: 2
     }).then(() => {
-        Sqlite.open('./test/basic.mbtiles', {Promise}).then((db) => {
+        open({filename: './test/basic.mbtiles', driver: sqlite3.Database}, {Promise}).then((db) => {
             Promise.all([
                 db.all('SELECT * FROM metadata'),
                 db.all('SELECT * from tiles')

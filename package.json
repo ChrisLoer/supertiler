@@ -2,12 +2,12 @@
     "name": "supertiler",
     "version": "0.0.4",
     "description": "GeoJSON -> MBTiles with Supercluster",
-    "module": "index.js",
+    "module": "main.js",
+    "type": "module",
     "scripts": {
-        "pretest": "eslint index.js main.js supertiler.js test/test.js",
-        "test": "tap --node-arg=-r --node-arg=esm test",
-        "cov": "tap  --node-arg=-r --node-arg=esm test --cov",
-        "prepublishOnly": "npm run test"
+        "pretest": "eslint main.js supertiler.js test/test.js",
+        "test": "tap test",
+        "cov": "tap test --cov"
     },
     "bin": {
         "supertiler": "supertiler.js"
@@ -21,7 +21,6 @@
         "mbtiles"
     ],
     "dependencies": {
-        "esm": "^3.2.25",
         "node-gzip": "^1.1.2",
         "sqlite": "^4.2.1",
         "sqlite3": "^5.1.6",
